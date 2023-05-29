@@ -1,0 +1,16 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts/build-info
+
+#contract
+contracts/periphery/IotaBeeSwapLpRouter.sol
+contracts/periphery/IotaBeeSwapSRouter.sol
+contracts/periphery/interfaces/IIotaBeeSwapLpRouter.sol
+contracts/periphery/interfaces/IIotaBeeSwapSRouter.sol

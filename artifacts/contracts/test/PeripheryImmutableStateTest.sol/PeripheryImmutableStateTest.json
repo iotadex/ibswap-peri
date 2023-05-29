@@ -1,0 +1,53 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "PeripheryImmutableStateTest",
+  "sourceName": "contracts/test/PeripheryImmutableStateTest.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_factory",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_WETH9",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "WETH9",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "factory",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60c060405234801561001057600080fd5b506040516101573803806101578339818101604052604081101561003357600080fd5b5080516020909101516001600160601b0319606092831b8116608052911b1660a05260805160601c60a05160601c60dd61007a6000398060615250806085525060dd6000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80634aa4a4fc146037578063c45a0155146059575b600080fd5b603d605f565b604080516001600160a01b039092168252519081900360200190f35b603d6083565b7f000000000000000000000000000000000000000000000000000000000000000081565b7f00000000000000000000000000000000000000000000000000000000000000008156fea2646970667358221220ef09b4ae6145963963628d2a2423ea0ffd637711900db25439db6260b019fc6e64736f6c63430007060033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060325760003560e01c80634aa4a4fc146037578063c45a0155146059575b600080fd5b603d605f565b604080516001600160a01b039092168252519081900360200190f35b603d6083565b7f000000000000000000000000000000000000000000000000000000000000000081565b7f00000000000000000000000000000000000000000000000000000000000000008156fea2646970667358221220ef09b4ae6145963963628d2a2423ea0ffd637711900db25439db6260b019fc6e64736f6c63430007060033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
