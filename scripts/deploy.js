@@ -12,20 +12,20 @@ async function main() {
     console.log(`Deployed WSMR to ${wsmr.address}`);
 
     const NFTDescriptorLib = await hre.ethers.getContractFactory("NFTDescriptor");
-    const nftdLib =  await NFTDescriptorLib.deploy();
+    const nftdLib = await NFTDescriptorLib.deploy();
     console.log(`Deployed NFTDescriptor to ${nftdLib.address}`);
 
     // SMR => bytes32
     const nativeCurrencyLabelBytes = "0x534d520000000000000000000000000000000000000000000000000000000000";
     const NonfungibleTokenPositionDescriptor = await hre.ethers.getContractFactory("NonfungibleTokenPositionDescriptor", {
-        libraries:{
+        libraries: {
             NFTDescriptor: nftdLib.address
         }
     });
     const nftPD = await NonfungibleTokenPositionDescriptor.deploy(wsmr.address, nativeCurrencyLabelBytes);
     console.log(`Deployed NonfungibleTokenPositionDescriptor to ${nftPD.address}`);
 
-    const factory = "0x8AfDFfe813826e63AE96A55C86Fd4a48028F3d1a";
+    const factory = "0x2972A77755621a7c57621C6EC1BCB720c36A28f5";
     const NonfungiblePositionManager = await hre.ethers.getContractFactory("NonfungiblePositionManager");
     const nftpm = await NonfungiblePositionManager.deploy(factory, wsmr.address, nftPD.address)
     console.log(`Deployed NonfungiblePositionManager to ${nftpm.address}`);
@@ -38,6 +38,6 @@ async function main() {
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+    console.error(error);
+    process.exitCode = 1;
 });
