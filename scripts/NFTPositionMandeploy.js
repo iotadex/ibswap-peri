@@ -7,10 +7,7 @@
 const hre = require("hardhat");
 
 async function main() {
-    const WSMR = await hre.ethers.getContractFactory("WSMR");
-    const wsmr0 = await WSMR.deploy();
-    console.log(`Deployed WSMR to ${wsmr0.address}`);
-    const wsmr = wsmr0.address;
+    const wsmr = "0xe2aC8A14901B17b5cDf7c15F414127d9bcC57A73";
 
     const NFTDescriptorLib = await hre.ethers.getContractFactory("NFTDescriptor");
     const nftdLib = await NFTDescriptorLib.deploy();
@@ -26,22 +23,10 @@ async function main() {
     const nftPD = await NonfungibleTokenPositionDescriptor.deploy(wsmr, nativeCurrencyLabelBytes);
     console.log(`Deployed NonfungibleTokenPositionDescriptor to ${nftPD.address}`);
 
-    const factory = "0x3cae2225CEDF6f005d0FEF7FBCfF1538073C653a";
+    const factory = "0x6cDa60f2b8C9514985eCE2e645829A602D01BE39";
     const NonfungiblePositionManager = await hre.ethers.getContractFactory("NonfungiblePositionManager");
     const nftpm = await NonfungiblePositionManager.deploy(factory, wsmr, nftPD.address)
     console.log(`Deployed NonfungiblePositionManager to ${nftpm.address}`);
-
-    const SwapRouter = await hre.ethers.getContractFactory("SwapRouter");
-    const router = await SwapRouter.deploy(factory, wsmr);
-    console.log(`Deployed SwapRouter to ${router.address}`);
-
-    const TickLens = await hre.ethers.getContractFactory("TickLens");
-    const tickLens = await TickLens.deploy()
-    console.log(`Deployed TickLens to ${tickLens.address}`);
-
-    const Quoter = await hre.ethers.getContractFactory("Quoter");
-    const quoter = await Quoter.deploy(factory, wsmr);
-    console.log(`Deployed Quoter to ${quoter.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

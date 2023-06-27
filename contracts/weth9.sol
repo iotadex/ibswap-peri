@@ -9,7 +9,7 @@ contract WSMR {
     event Approval(address indexed src, address indexed guy, uint256 wad);
     event Transfer(address indexed src, address indexed dst, uint256 wad);
     event Deposit(address indexed dst, uint256 wad);
-    event Withdrawal(address indexed src, uint256 wad);
+    event Withdraw(address indexed src, uint256 wad);
 
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
@@ -24,7 +24,7 @@ contract WSMR {
         balanceOf[msg.sender] -= wad;
         (bool success, ) = msg.sender.call{value: wad}("");
         require(success, "!withdraw");
-        emit Withdrawal(msg.sender, wad);
+        emit Withdraw(msg.sender, wad);
     }
 
     function totalSupply() public view returns (uint256) {
