@@ -40,3 +40,14 @@ token1=0x3cf63eb3afe4b4717e78eae99d632321fc5ce519&token2=0xe2aC8A14901B17b5cDf7c
 gas=0.323469
 
 创建池子gas好高: 4.588051
+
+# Shimmer Evm Main
+```
+    Deployed WSMR to 0x6C890075406C5DF08b427609E3A2eAD1851AD68D
+    Deployed NFTDescriptor to 0x2BD28aB087a847eDd4515b4A81F77DdEF37A741F
+    Deployed NonfungibleTokenPositionDescriptor to 0xC79cAba5D7F06Aa0D8e71288b4825eD53c255365
+    Deployed NonfungiblePositionManager to 0x5f0E8A90f8093aBddF0cA21898B2A71350754a0D
+    Deployed SwapRouter to 0xb783f05F28DFABD0d09Ccb524e6C6289Cb0e7C1F
+    Deployed TickLens to 0xB9CCA26537cb7f2fe1d9f307F528a5154D72f179
+    Deployed Quoter to 0x355Ce81d0c24e8D5125a0aA17686Cc57dE2E2Fd2
+```
