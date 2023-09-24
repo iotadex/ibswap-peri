@@ -19,7 +19,7 @@ import "./base/SelfPermit.sol";
 import "./base/PoolInitializer.sol";
 
 /// @title NFT positions
-/// @notice Wraps Uniswap V3 positions in the ERC721 non-fungible token interface
+/// @notice Wraps IotabeeSwap in the ERC721 non-fungible token interface
 contract NonfungiblePositionManager is
     INonfungiblePositionManager,
     Multicall,
@@ -73,7 +73,7 @@ contract NonfungiblePositionManager is
         address _WETH9,
         address _tokenDescriptor_
     )
-        ERC721Permit("Uniswap V3 Positions NFT-V1", "UNI-V3-POS", "1")
+        ERC721Permit("IotabeeSwap Positions NFT-V1", "IBS-POS", "1")
         PeripheryImmutableState(_factory, _WETH9)
     {
         _tokenDescriptor = _tokenDescriptor_;

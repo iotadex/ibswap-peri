@@ -7,12 +7,14 @@
 const hre = require("hardhat");
 
 async function main() {
-    const wsmr = "0x8202AC9838d3F199D3BaD2336e05e52507146659";
-    const factory = "0x3cae2225CEDF6f005d0FEF7FBCfF1538073C653a";
-    const nftPD = "0x2A631305Bae98aD356F74cC75772663fAB5a9ff7";
-    const NonfungiblePositionManager = await hre.ethers.getContractFactory("NonfungiblePositionManager");
-    const nftpm = await NonfungiblePositionManager.deploy(factory, wsmr, nftPD)
-    console.log(`Deployed NonfungiblePositionManager to ${nftpm.address}`);
+    const FaucetERC20 = await hre.ethers.getContractFactory("TokenERC20");
+
+    const SOONt1 = await FaucetERC20.deploy("Soon test", "SOONtest", 8);
+    console.log(`SOONt1 was Deployed to : ${SOONt1.address}`);
+
+    const symbol = "TT1";
+    const tt = await FaucetERC20.deploy("Soon test", "SOONtest", 8);
+    console.log(`${symbol} was Deployed to : ${tt.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

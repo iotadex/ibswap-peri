@@ -11,7 +11,6 @@ async function main() {
     const wsmr0 = await WSMR.deploy();
     console.log(`Deployed WSMR to ${wsmr0.address}`);
     let wsmr = wsmr0.address;
-    //    wsmr = "0x1b10CAdebbf96BC2AaA3AFfd78414AB50eCeF571";
 
     const NFTDescriptorLib = await hre.ethers.getContractFactory("NFTDescriptor");
     const nftdLib = await NFTDescriptorLib.deploy();
@@ -27,7 +26,7 @@ async function main() {
     const nftPD = await NonfungibleTokenPositionDescriptor.deploy(wsmr, nativeCurrencyLabelBytes);
     console.log(`Deployed NonfungibleTokenPositionDescriptor to ${nftPD.address}`);
 
-    const factory = "0x0be5c32E08B6d26Cbf399604A1ECbd78217A0080";
+    const factory = "0x2Eb409E79ede4f91fAeB043E72557109A2235915";
     const NonfungiblePositionManager = await hre.ethers.getContractFactory("NonfungiblePositionManager");
     const nftpm = await NonfungiblePositionManager.deploy(factory, wsmr, nftPD.address)
     console.log(`Deployed NonfungiblePositionManager to ${nftpm.address}`);
