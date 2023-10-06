@@ -2,16 +2,20 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
-import '@uniswap/v3-core/contracts/libraries/SafeCast.sol';
-import '@uniswap/v3-core/contracts/libraries/TickMath.sol';
-import '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
-import '@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol';
+import "@uniswap/v3-core/contracts/libraries/SafeCast.sol";
+import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
+import "@uniswap/v3-core/contracts/libraries/FixedPoint128.sol";
+import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
+import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
 
-import '../interfaces/IQuoter.sol';
-import '../base/PeripheryImmutableState.sol';
-import '../libraries/Path.sol';
-import '../libraries/PoolAddress.sol';
-import '../libraries/CallbackValidation.sol';
+import "../interfaces/INonfungiblePositionManager.sol";
+import "../interfaces/IQuoter.sol";
+import "../base/PeripheryImmutableState.sol";
+import "../libraries/Path.sol";
+import "../libraries/PositionKey.sol";
+import "../libraries/PoolAddress.sol";
+import "../libraries/CallbackValidation.sol";
 
 /// @title Provides quotes for swaps
 /// @notice Allows getting the expected amount out or amount in for a given swap without executing the swap
@@ -24,14 +28,29 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
     /// @dev Transient storage variable used to check a safety condition in exact output swaps.
     uint256 private amountOutCached;
 
-    constructor(address _factory, address _WETH9) PeripheryImmutableState(_factory, _WETH9) {}
+    // nft token address for swap of v3
+    INonfungiblePositionManager public immutable nft;
+
+    constructor(
+        address _factory,
+        address _WETH9,
+        address _nft
+    ) PeripheryImmutableState(_factory, _WETH9) {
+        nft = INonfungiblePositionManager(_nft);
+    }
 
     function getPool(
         address tokenA,
         address tokenB,
         uint24 fee
     ) private view returns (IUniswapV3Pool) {
-        return IUniswapV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, fee)));
+        return
+            IUniswapV3Pool(
+                PoolAddress.computeAddress(
+                    factory,
+                    PoolAddress.getPoolKey(tokenA, tokenB, fee)
+                )
+            );
     }
 
     /// @inheritdoc IUniswapV3SwapCallback
@@ -41,13 +60,25 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
         bytes memory path
     ) external view override {
         require(amount0Delta > 0 || amount1Delta > 0); // swaps entirely within 0-liquidity regions are not supported
-        (address tokenIn, address tokenOut, uint24 fee) = path.decodeFirstPool();
+        (address tokenIn, address tokenOut, uint24 fee) = path
+            .decodeFirstPool();
         CallbackValidation.verifyCallback(factory, tokenIn, tokenOut, fee);
 
-        (bool isExactInput, uint256 amountToPay, uint256 amountReceived) =
-            amount0Delta > 0
-                ? (tokenIn < tokenOut, uint256(amount0Delta), uint256(-amount1Delta))
-                : (tokenOut < tokenIn, uint256(amount1Delta), uint256(-amount0Delta));
+        (
+            bool isExactInput,
+            uint256 amountToPay,
+            uint256 amountReceived
+        ) = amount0Delta > 0
+                ? (
+                    tokenIn < tokenOut,
+                    uint256(amount0Delta),
+                    uint256(-amount1Delta)
+                )
+                : (
+                    tokenOut < tokenIn,
+                    uint256(amount1Delta),
+                    uint256(-amount0Delta)
+                );
         if (isExactInput) {
             assembly {
                 let ptr := mload(0x40)
@@ -56,7 +87,8 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
             }
         } else {
             // if the cache has been populated, ensure that the full output amount has been received
-            if (amountOutCached != 0) require(amountReceived == amountOutCached);
+            if (amountOutCached != 0)
+                require(amountReceived == amountOutCached);
             assembly {
                 let ptr := mload(0x40)
                 mstore(ptr, amountToPay)
@@ -66,9 +98,11 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
     }
 
     /// @dev Parses a revert reason that should contain the numeric quote
-    function parseRevertReason(bytes memory reason) private pure returns (uint256) {
+    function parseRevertReason(
+        bytes memory reason
+    ) private pure returns (uint256) {
         if (reason.length != 32) {
-            if (reason.length < 68) revert('Unexpected error');
+            if (reason.length < 68) revert("Unexpected error");
             assembly {
                 reason := add(reason, 0x04)
             }
@@ -93,7 +127,11 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
                 zeroForOne,
                 amountIn.toInt256(),
                 sqrtPriceLimitX96 == 0
-                    ? (zeroForOne ? TickMath.MIN_SQRT_RATIO + 1 : TickMath.MAX_SQRT_RATIO - 1)
+                    ? (
+                        zeroForOne
+                            ? TickMath.MIN_SQRT_RATIO + 1
+                            : TickMath.MAX_SQRT_RATIO - 1
+                    )
                     : sqrtPriceLimitX96,
                 abi.encodePacked(tokenIn, fee, tokenOut)
             )
@@ -103,14 +141,24 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
     }
 
     /// @inheritdoc IQuoter
-    function quoteExactInput(bytes memory path, uint256 amountIn) external override returns (uint256 amountOut) {
+    function quoteExactInput(
+        bytes memory path,
+        uint256 amountIn
+    ) external override returns (uint256 amountOut) {
         while (true) {
             bool hasMultiplePools = path.hasMultiplePools();
 
-            (address tokenIn, address tokenOut, uint24 fee) = path.decodeFirstPool();
+            (address tokenIn, address tokenOut, uint24 fee) = path
+                .decodeFirstPool();
 
             // the outputs of prior swaps become the inputs to subsequent ones
-            amountIn = quoteExactInputSingle(tokenIn, tokenOut, fee, amountIn, 0);
+            amountIn = quoteExactInputSingle(
+                tokenIn,
+                tokenOut,
+                fee,
+                amountIn,
+                0
+            );
 
             // decide whether to continue or terminate
             if (hasMultiplePools) {
@@ -139,7 +187,11 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
                 zeroForOne,
                 -amountOut.toInt256(),
                 sqrtPriceLimitX96 == 0
-                    ? (zeroForOne ? TickMath.MIN_SQRT_RATIO + 1 : TickMath.MAX_SQRT_RATIO - 1)
+                    ? (
+                        zeroForOne
+                            ? TickMath.MIN_SQRT_RATIO + 1
+                            : TickMath.MAX_SQRT_RATIO - 1
+                    )
                     : sqrtPriceLimitX96,
                 abi.encodePacked(tokenOut, fee, tokenIn)
             )
@@ -150,14 +202,24 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
     }
 
     /// @inheritdoc IQuoter
-    function quoteExactOutput(bytes memory path, uint256 amountOut) external override returns (uint256 amountIn) {
+    function quoteExactOutput(
+        bytes memory path,
+        uint256 amountOut
+    ) external override returns (uint256 amountIn) {
         while (true) {
             bool hasMultiplePools = path.hasMultiplePools();
 
-            (address tokenOut, address tokenIn, uint24 fee) = path.decodeFirstPool();
+            (address tokenOut, address tokenIn, uint24 fee) = path
+                .decodeFirstPool();
 
             // the inputs of prior swaps become the outputs of subsequent ones
-            amountOut = quoteExactOutputSingle(tokenIn, tokenOut, fee, amountOut, 0);
+            amountOut = quoteExactOutputSingle(
+                tokenIn,
+                tokenOut,
+                fee,
+                amountOut,
+                0
+            );
 
             // decide whether to continue or terminate
             if (hasMultiplePools) {
@@ -166,5 +228,45 @@ contract Quoter is IQuoter, IUniswapV3SwapCallback, PeripheryImmutableState {
                 return amountOut;
             }
         }
+    }
+
+    function queryFee(
+        uint256 tokenId
+    ) external view returns (uint256, uint256) {
+        (
+            ,
+            ,
+            address t0,
+            address t1,
+            uint24 f,
+            int24 tickLower,
+            int24 tickUpper,
+            uint128 liquidity,
+            uint256 pFee0,
+            uint256 pFee1,
+            ,
+
+        ) = nft.positions(tokenId);
+        IUniswapV3Pool pool = getPool(t0, t1, f);
+        (
+            ,
+            uint256 feeGrowthInside0LastX128,
+            uint256 feeGrowthInside1LastX128,
+            ,
+
+        ) = pool.positions(
+                PositionKey.compute(address(nft), tickLower, tickUpper)
+            );
+        uint256 fee0 = FullMath.mulDiv(
+            feeGrowthInside0LastX128 - pFee0,
+            liquidity,
+            FixedPoint128.Q128
+        );
+        uint256 fee1 = FullMath.mulDiv(
+            feeGrowthInside1LastX128 - pFee1,
+            liquidity,
+            FixedPoint128.Q128
+        );
+        return (fee0, fee1);
     }
 }
