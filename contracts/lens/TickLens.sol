@@ -13,7 +13,7 @@ contract TickLens is ITickLens {
         public
         view
         override
-        returns (PopulatedTick[] memory populatedTicks)
+        returns (PopulatedTick[] memory populatedTicks, uint256 height)
     {
         // fetch bitmap
         uint256 bitmap = IUniswapV3Pool(pool).tickBitmap(tickBitmapIndex);
@@ -38,5 +38,11 @@ contract TickLens is ITickLens {
                 });
             }
         }
+        height = block.number;
+    }
+
+    function ticks(address pool, int24 tick) public view override returns(uint128, int128, uint256) {
+        (uint128 liquidityGross, int128 liquidityNet, , , , , , ) = IUniswapV3Pool(pool).ticks(tick);
+        return (liquidityGross, liquidityNet, block.number);
     }
 }

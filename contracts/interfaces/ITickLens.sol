@@ -21,5 +21,7 @@ interface ITickLens {
     function getPopulatedTicksInWord(address pool, int16 tickBitmapIndex)
         external
         view
-        returns (PopulatedTick[] memory populatedTicks);
+        returns (PopulatedTick[] memory populatedTicks, uint256 height);
+
+    function ticks(address pool, int24 tick) external view returns(uint128, int128, uint256);
 }
