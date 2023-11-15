@@ -50,4 +50,5 @@ gas=0.323469
     Deployed SwapRouter to 0xb783f05F28DFABD0d09Ccb524e6C6289Cb0e7C1F
     Deployed TickLens to 0xB9CCA26537cb7f2fe1d9f307F528a5154D72f179
     Deployed Quoter to 0x355Ce81d0c24e8D5125a0aA17686Cc57dE2E2Fd2
+    Deployed TickLens v2 to 0xAb64ae3fD8DD36B1eB62a4883122ba5cf9DA3Ed4
 ```

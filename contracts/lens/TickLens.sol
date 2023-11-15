@@ -45,4 +45,10 @@ contract TickLens is ITickLens {
         (uint128 liquidityGross, int128 liquidityNet, , , , , , ) = IUniswapV3Pool(pool).ticks(tick);
         return (liquidityGross, liquidityNet, block.number);
     }
+
+    function tickLiquidity(address pool)public view override returns(uint160, int24, uint128, uint256) {
+        (uint160 sqrtPriceX96, int24 tick, , , , ,) = IUniswapV3Pool(pool).slot0();
+        uint128 liquidity = IUniswapV3Pool(pool).liquidity();
+        return (sqrtPriceX96, tick, liquidity, block.number);
+    }
 }

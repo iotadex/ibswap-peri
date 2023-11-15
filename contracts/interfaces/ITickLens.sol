@@ -24,4 +24,5 @@ interface ITickLens {
         returns (PopulatedTick[] memory populatedTicks, uint256 height);
 
     function ticks(address pool, int24 tick) external view returns(uint128, int128, uint256);
+    function tickLiquidity(address pool)external view returns(uint160, int24, uint128, uint256);
 }
